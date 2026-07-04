@@ -15,14 +15,6 @@ interface Review {
   date: string;
 }
 
-// Palette morbida per gli avatar con iniziali
-const AVATAR_STYLES = [
-  "from-primary/80 to-primary/50",
-  "from-secondary to-primary/40",
-  "from-primary/60 to-secondary",
-  "from-secondary/80 to-primary/60",
-];
-
 const ReviewsSection = () => {
   const t = useTranslations("reviews");
   const reviews: Review[] = [
@@ -81,27 +73,30 @@ const ReviewsSection = () => {
           modules={[Autoplay, Pagination]}
           spaceBetween={24}
           slidesPerView={1}
+          loop
+          speed={36000}
+          allowTouchMove={false}
           pagination={{
             clickable: true,
             bulletClass: "review-pagination-bullet",
             bulletActiveClass: "review-pagination-bullet-active",
           }}
           autoplay={{
-            delay: 5000,
+            delay: 0,
             disableOnInteraction: false,
           }}
           breakpoints={{
             640: { slidesPerView: 2 },
             1024: { slidesPerView: 3 },
           }}
-          className="px-2 pt-2 pb-10 [&_.swiper-wrapper]:items-stretch [&_.swiper-slide]:h-auto [&_.swiper-slide]:self-stretch"
+          className="px-2 pt-2 pb-10 [&_.swiper-wrapper]:items-stretch [&_.swiper-wrapper]:ease-linear [&_.swiper-slide]:h-auto [&_.swiper-slide]:self-stretch"
         >
-          {reviews.map((review, index) => (
+          {reviews.map((review) => (
             <SwiperSlide
               key={review.name}
               style={{ height: "auto", display: "flex" }}
             >
-              <article className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-border/30 bg-white p-6 shadow-[0_12px_28px_rgba(31,41,55,0.08)] transition-colors duration-200 hover:border-primary/25 md:p-7">
+              <article className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-border/40 bg-white p-6 shadow-none transition-colors duration-200 hover:border-primary/30 md:p-7">
                 {/* Quote decorativa */}
                 <span
                   aria-hidden="true"
@@ -110,20 +105,12 @@ const ReviewsSection = () => {
                   &rdquo;
                 </span>
 
-                {/* Intestazione: avatar + nome + data */}
-                <div className="flex items-center gap-3">
-                  <span
-                    aria-hidden="true"
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${AVATAR_STYLES[index % AVATAR_STYLES.length]} font-bold text-white shadow-sm`}
-                  >
-                    {review.name.charAt(0)}
-                  </span>
-                  <div className="min-w-0">
-                    <h4 className="truncate text-base font-bold text-text-dark">
-                      {review.name}
-                    </h4>
-                    <p className="text-xs text-text-light">{review.date}</p>
-                  </div>
+                {/* Intestazione: nome + data */}
+                <div className="min-w-0">
+                  <h4 className="truncate text-base font-bold text-text-dark">
+                    {review.name}
+                  </h4>
+                  <p className="text-xs text-text-light">{review.date}</p>
                 </div>
 
                 {/* Stelle */}

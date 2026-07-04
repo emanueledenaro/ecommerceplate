@@ -104,7 +104,7 @@ export default function ProductCard({
               height={400}
               alt={product.title}
               loading="lazy"
-              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
+              className={`w-full h-full object-cover transition-all duration-300 ${
                 isHovered && hoverImage !== mainImage
                   ? "opacity-0"
                   : "opacity-100"
@@ -119,7 +119,7 @@ export default function ProductCard({
                 height={400}
                 alt={t("alternativeImageAlt", { title: product.title })}
                 loading="lazy"
-                className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
+                className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 ${
                   isHovered ? "opacity-100" : "opacity-0"
                 }`}
               />
@@ -127,7 +127,7 @@ export default function ProductCard({
 
             {/* Overlay Hover - detail */}
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
-              <div className="text-white text-center transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+              <div className="text-white text-center">
                 <HiEye className="mx-auto mb-2" size={32} />
                 <span className="text-lg font-bold">{t("details")}</span>
               </div>
@@ -188,7 +188,7 @@ export default function ProductCard({
               {colors.slice(0, 5).map((color, idx) => (
                 <div
                   key={idx}
-                  className="w-5 h-5 md:w-6 md:h-6 rounded-full border border-border  cursor-pointer hover:scale-110 transition-transform"
+                  className="w-5 h-5 md:w-6 md:h-6 rounded-full border border-border  cursor-pointer"
                   style={{ backgroundColor: getColorHex(color) }}
                   title={color}
                 />

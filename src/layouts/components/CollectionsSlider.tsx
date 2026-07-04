@@ -23,7 +23,7 @@ const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
                 className="group flex flex-col items-center text-center"
               >
                 {/* Anello sfumato coral→pesca */}
-                <span className="rounded-full p-[3px] bg-gradient-to-br from-primary/70 via-secondary to-primary/30 shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                <span className="rounded-full p-[3px] bg-gradient-to-br from-primary/70 via-secondary to-primary/30 shadow-md transition-all duration-300 group-hover:shadow-lg">
                   <span className="block rounded-full bg-body p-1">
                     <span className="block relative aspect-square w-24 sm:w-28 md:w-32 overflow-hidden rounded-full">
                       <ImageFallback
@@ -32,7 +32,7 @@ const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
                         width={224}
                         height={224}
                         alt={image?.altText || title}
-                        className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                        className="h-full w-full object-cover"
                       />
                       <span className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     </span>

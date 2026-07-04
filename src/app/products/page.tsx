@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import LoadingProducts from "@/layouts/components/loadings/skeleton/SkeletonProducts";
 import ActiveFilters from "@/components/ActiveFilters";
+import CatalogSidebar from "@/components/CatalogSidebar";
 import CategoryHeader from "@/components/CategoryHeader";
+import CategorySort from "@/components/CategorySort";
 import EmptyState from "@/components/EmptyState";
-import SubcategoryChips from "@/components/SubcategoryChips";
-import ProductLayouts from "@/components/product/ProductLayouts";
 import { defaultSort, sorting } from "@/lib/constants";
 import { getListPage } from "@/lib/contentParser";
 import {
@@ -12,7 +12,6 @@ import {
   getCollections,
   getHighestProductPrice,
   getProducts,
-  getVendors,
 } from "@/lib/shopify";
 import { Collection, PageInfo, Product } from "@/lib/shopify/types";
 import {
@@ -20,10 +19,9 @@ import {
   extractFiltersFromSearchParams,
   hasActiveFilters,
 } from "@/lib/utils/productQueryBuilder";
-import { getAvailableSubcategories, getSubcategory } from "@/lib/subcategories";
+import { getSubcategory, getSubcategoryFacets } from "@/lib/subcategories";
 import CallToAction from "@/partials/CallToAction";
 import ProductCardView from "@/partials/ProductCardView";
-import ProductListView from "@/partials/ProductListView";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { shopifyContext } from "@/lib/i18n/config";
@@ -62,15 +60,14 @@ const ShowProducts = async ({
     q: searchValue,
     minPrice,
     maxPrice,
-    b: brand,
     c: category,
-    t: tag,
     sub: subcategory,
+    cursor,
   } = searchParams as {
     [key: string]: string;
   };
 
-  const { layout, cursor } = searchParams as { [key: string]: string };
+  const t = await getTranslations("products");
 
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;
@@ -82,8 +79,6 @@ const ShowProducts = async ({
   const hasFilters = hasActiveFilters(filters);
 
   let productsData: { pageInfo: PageInfo | null; products: Product[] };
-  let vendorsWithCounts: { vendor: string; productCount: number }[] = [];
-  let categoriesWithCounts: { category: string; productCount: number }[] = [];
   let currentCategory: Collection | undefined;
 
   if (hasFilters) {
@@ -107,49 +102,12 @@ const ShowProducts = async ({
             context,
           })
         : await getProducts(query);
-
-    const uniqueVendors: string[] = [
-      ...new Set(
-        ((productsData?.products as Product[]) || []).map((product: Product) =>
-          String(product?.vendor || ""),
-        ),
-      ),
-    ];
-
-    const uniqueCategories: string[] = [
-      ...new Set(
-        ((productsData?.products as Product[]) || []).flatMap(
-          (product: Product) =>
-            product.collections.nodes.map(
-              (collectionNode: any) => collectionNode.title || "",
-            ),
-        ),
-      ),
-    ];
-
-    vendorsWithCounts = uniqueVendors.map((vendor: string) => {
-      const productCount = (productsData?.products || []).filter(
-        (product: Product) => product?.vendor === vendor,
-      ).length;
-      return { vendor, productCount };
-    });
-
-    categoriesWithCounts = uniqueCategories.map((category: string) => {
-      const productCount = ((productsData?.products as Product[]) || []).filter(
-        (product: Product) =>
-          product.collections.nodes.some(
-            (collectionNode: any) => collectionNode.title === category,
-          ),
-      ).length;
-      return { category, productCount };
-    });
   } else {
     // Fetch all products
     productsData = await getProducts({ sortKey, reverse, cursor, context });
   }
 
   const categories = await getCollections(context);
-  const vendors = await getVendors({ context });
 
   // Find current category if present
   const inCategory = Boolean(category && category !== "all");
@@ -157,29 +115,68 @@ const ShowProducts = async ({
     currentCategory = categories.find((cat) => cat.handle === category);
   }
 
-  // Sottocategorie (derivate dal Product Type) disponibili nel mondo corrente,
-  // più il filtro sulla sottocategoria selezionata.
-  const availableSubcategories = inCategory
-    ? getAvailableSubcategories(productsData.products)
+  // Faccette della sidebar: mondi animali (vista globale) o sottocategorie
+  // (dentro un mondo). Calcolate dinamicamente coi conteggi, stile "negozio".
+  const animalFacets = !inCategory
+    ? categories
+        .map((cat) => ({
+          handle: cat.handle,
+          title: cat.title,
+          count: cat.products?.edges?.length ?? 0,
+        }))
+        .filter((facet) => facet.count > 0)
     : [];
-  const displayProducts =
-    inCategory && subcategory
-      ? productsData.products.filter(
-          (product: Product) =>
-            getSubcategory(product.productType) === subcategory,
-        )
-      : productsData.products;
+  const subcategoryFacets = inCategory
+    ? getSubcategoryFacets(productsData.products)
+    : [];
 
-  const tags = [
-    ...new Set(
-      productsData?.products.flatMap((product: Product) => product.tags),
-    ),
-  ];
+  // Filtri applicati sui prodotti del mondo (sottocategoria + prezzo),
+  // stile "negozio": faccette client-side sui prodotti già caricati.
+  const minP = minPrice ? parseFloat(minPrice) : null;
+  const maxP = maxPrice ? parseFloat(maxPrice) : null;
+  let displayProducts = productsData.products;
+  if (inCategory && subcategory) {
+    displayProducts = displayProducts.filter(
+      (product: Product) => getSubcategory(product.productType) === subcategory,
+    );
+  }
+  if (inCategory && (minP !== null || maxP !== null)) {
+    displayProducts = displayProducts.filter((product: Product) => {
+      const amount = parseFloat(
+        product.priceRange?.minVariantPrice?.amount || "0",
+      );
+      if (minP !== null && amount < minP) return false;
+      if (maxP !== null && amount > maxP) return false;
+      return true;
+    });
+  }
 
-  const maxPriceData = await getHighestProductPrice(context);
+  // Prezzo massimo per il range slider: dai prodotti caricati, con fallback globale.
+  const worldMaxPrice = Math.ceil(
+    productsData.products.reduce((max, product) => {
+      const amount = parseFloat(
+        product.priceRange?.maxVariantPrice?.amount || "0",
+      );
+      return amount > max ? amount : max;
+    }, 0),
+  );
+  const globalMaxPrice = await getHighestProductPrice(context);
+  const sidebarMaxPrice =
+    worldMaxPrice > 0
+      ? {
+          amount: String(worldMaxPrice),
+          currencyCode:
+            productsData.products[0]?.priceRange?.maxVariantPrice
+              ?.currencyCode || "MXN",
+        }
+      : {
+          amount: globalMaxPrice?.amount || "10000",
+          currencyCode: globalMaxPrice?.currencyCode || "MXN",
+        };
 
   const productCount = displayProducts.length;
   const hasProducts = productCount > 0;
+  const hasSidebar = animalFacets.length > 0 || subcategoryFacets.length > 0;
 
   return (
     <>
@@ -190,46 +187,50 @@ const ShowProducts = async ({
         productCount={productCount}
       />
 
-      {/* Main Content with vertical spacing */}
+      {/* Main Content: sidebar filtri + griglia (stile negozio) */}
       <div className="py-12 md:py-16">
         <div className="container">
-          {/* Sottocategorie del mondo animale corrente */}
-          <SubcategoryChips
-            subcategories={availableSubcategories}
-            selected={subcategory}
-          />
+          <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
+            {hasSidebar && (
+              <Suspense>
+                <CatalogSidebar
+                  animalFacets={animalFacets}
+                  subcategoryFacets={subcategoryFacets}
+                  selectedAnimal={inCategory ? category : undefined}
+                  selectedSub={subcategory}
+                  maxPriceData={sidebarMaxPrice}
+                />
+              </Suspense>
+            )}
 
-          {/* Active Filters with removable chips */}
-          <ActiveFilters filters={filters} />
+            <div className="grow">
+              {/* Barra: conteggio risultati + ordinamento */}
+              <div className="mb-6 flex items-center justify-between gap-3">
+                <p className="text-sm text-text-light">
+                  {t("productCount", { count: productCount })}
+                </p>
+                <Suspense>
+                  <CategorySort />
+                </Suspense>
+              </div>
 
-          {/* Product Layouts (sort, view toggle, filter drawer) */}
-          <Suspense>
-            <ProductLayouts
-              categories={categories}
-              vendors={vendors}
-              tags={tags}
-              maxPriceData={maxPriceData}
-              vendorsWithCounts={vendorsWithCounts}
-              categoriesWithCounts={categoriesWithCounts}
-            />
-          </Suspense>
+              {/* Filtri attivi rimovibili */}
+              <ActiveFilters filters={filters} />
 
-          {/* Products Grid/List */}
-          {!hasProducts ? (
-            <EmptyState />
-          ) : layout === "list" ? (
-            <ProductListView
-              searchParams={searchParams as Record<string, string | undefined>}
-              initialProducts={displayProducts}
-              initialPageInfo={productsData.pageInfo}
-            />
-          ) : (
-            <ProductCardView
-              searchParams={searchParams as Record<string, string | undefined>}
-              initialProducts={displayProducts}
-              initialPageInfo={productsData.pageInfo}
-            />
-          )}
+              {/* Griglia prodotti */}
+              {!hasProducts ? (
+                <EmptyState />
+              ) : (
+                <ProductCardView
+                  searchParams={
+                    searchParams as Record<string, string | undefined>
+                  }
+                  initialProducts={displayProducts}
+                  initialPageInfo={productsData.pageInfo}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </>

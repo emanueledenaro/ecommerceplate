@@ -72,7 +72,7 @@ function SubmitButton({
       disabled={pending}
       className={`${buttonClasses} ${
         showSuccess ? "!bg-success !text-white" : ""
-      } flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50  disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none min-h-[44px]`}
+      } flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.98] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/50  disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-none min-h-[44px]`}
     >
       {pending ? (
         <>

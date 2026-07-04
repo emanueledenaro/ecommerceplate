@@ -24,6 +24,13 @@ export const getSubcategory = (productType?: string | null): string | null => {
   return base || null;
 };
 
+const rankSubcategory = (value: string) => {
+  const index = SUBCATEGORY_ORDER.indexOf(
+    value as (typeof SUBCATEGORY_ORDER)[number],
+  );
+  return index < 0 ? SUBCATEGORY_ORDER.length : index;
+};
+
 /** Sottocategorie presenti in una lista di prodotti, ordinate per presentazione. */
 export const getAvailableSubcategories = (
   products: { productType?: string | null }[],
@@ -34,12 +41,26 @@ export const getAvailableSubcategories = (
     if (sub) present.add(sub);
   }
 
-  const rank = (value: string) => {
-    const index = SUBCATEGORY_ORDER.indexOf(
-      value as (typeof SUBCATEGORY_ORDER)[number],
-    );
-    return index < 0 ? SUBCATEGORY_ORDER.length : index;
-  };
+  return [...present].sort(
+    (a, b) => rankSubcategory(a) - rankSubcategory(b) || a.localeCompare(b),
+  );
+};
 
-  return [...present].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+/** Sottocategorie con conteggio prodotti, ordinate per presentazione. */
+export const getSubcategoryFacets = (
+  products: { productType?: string | null }[],
+): { value: string; count: number }[] => {
+  const counts = new Map<string, number>();
+  for (const product of products) {
+    const sub = getSubcategory(product.productType);
+    if (sub) counts.set(sub, (counts.get(sub) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .map(([value, count]) => ({ value, count }))
+    .sort(
+      (a, b) =>
+        rankSubcategory(a.value) - rankSubcategory(b.value) ||
+        a.value.localeCompare(b.value),
+    );
 };

@@ -172,7 +172,7 @@ export function VariantSelector({
                         : ""
                     } ${
                       !isActive && isAvailableForSale && option.name !== "Color"
-                        ? "ring-1 ring-transparent transition duration-300 ease-in-out hover:scale-110 hover:ring-dark "
+                        ? "ring-1 ring-transparent transition duration-300 ease-in-out hover:ring-dark "
                         : ""
                     } ${
                       !isAvailableForSale

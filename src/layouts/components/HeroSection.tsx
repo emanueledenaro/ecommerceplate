@@ -46,7 +46,7 @@ const HeroSection = () => {
 
           {/* CTA Unica */}
           <Link
-            className="btn btn-lg btn-primary inline-flex items-center gap-2 px-8 py-4 text-lg font-bold shadow-xl transition-all hover:scale-105 hover:shadow-2xl"
+            className="btn btn-lg btn-primary inline-flex items-center gap-2 px-8 py-4 text-lg font-bold shadow-xl transition-all hover:shadow-2xl"
             href="/products"
           >
             {t("cta")}

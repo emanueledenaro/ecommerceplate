@@ -119,7 +119,7 @@ function FilterChip({ label, href }: { label: string; href: string }) {
       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10  text-primary  text-sm font-medium hover:bg-primary/20  transition-colors group"
     >
       <span>{label}</span>
-      <HiX className="w-4 h-4 group-hover:scale-110 transition-transform" />
+      <HiX className="w-4 h-4" />
     </Link>
   );
 }

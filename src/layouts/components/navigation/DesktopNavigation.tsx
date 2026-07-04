@@ -115,7 +115,7 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
           <svg
             aria-hidden="true"
             focusable="false"
-            className="h-4 w-4 transition-transform group-hover:rotate-180"
+            className="h-4 w-4"
             viewBox="0 0 20 20"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

@@ -4,7 +4,7 @@ export default function CloseCart({ className }: { className?: string }) {
   return (
     <div className="relative text-black transition-colors  ">
       <FaXmark
-        className={`h-6 transition-all ease-in-out hover:scale-110 ${className || ""}`}
+        className={`h-6 transition-all ease-in-out ${className || ""}`}
       />
     </div>
   );

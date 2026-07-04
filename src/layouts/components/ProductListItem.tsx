@@ -52,7 +52,7 @@ export default function ProductListItem({ product }: ProductListItemProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Card Elevation Container - Orizzontale */}
-      <div className="bg-white  shadow-lg hover:shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 group-hover:-translate-y-1 flex flex-col md:flex-row">
+      <div className="bg-white  shadow-lg hover:shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 flex flex-col md:flex-row">
         {/* Immagine Container Quadrata (40% width desktop) */}
         <div className="relative md:w-[40%] aspect-square overflow-hidden">
           {/* Badge piccoli nell'angolo alto-sinistra */}
@@ -154,7 +154,7 @@ export default function ProductListItem({ product }: ProductListItemProps) {
                 .map((color, idx) => (
                   <div
                     key={idx}
-                    className="w-5 h-5 rounded-full border border-border  shadow-sm cursor-pointer hover:scale-110 transition-transform"
+                    className="w-5 h-5 rounded-full border border-border  shadow-sm cursor-pointer"
                     style={{ backgroundColor: getColorHex(color) }}
                     title={color}
                   />

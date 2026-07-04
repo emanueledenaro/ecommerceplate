@@ -118,7 +118,7 @@ const ProductGallery = ({ images }: ProductGalleryProps): JSX.Element => {
                     alt={item.altText || `Immagine prodotto ${index + 1}`}
                     width={722}
                     height={623}
-                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-contain"
                     draggable={false}
                   />
                   {/* Overlay on hover */}

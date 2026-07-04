@@ -154,9 +154,7 @@ const TrustBar = () => {
               key={`original-${index}`}
               className="flex flex-col items-center text-center gap-2 group min-w-[220px] flex-shrink-0 md:min-w-0 md:gap-3"
             >
-              <div className="text-primary  transition-transform group-hover:scale-110 duration-300">
-                {item.icon}
-              </div>
+              <div className="text-primary">{item.icon}</div>
               <div>
                 <h3 className="text-base md:text-lg font-bold text-text-dark  mb-1 whitespace-nowrap">
                   {item.title}
@@ -174,9 +172,7 @@ const TrustBar = () => {
               key={`duplicate-${index}`}
               className="flex md:hidden flex-col items-center text-center gap-2 group min-w-[220px] flex-shrink-0"
             >
-              <div className="text-primary  transition-transform group-hover:scale-110 duration-300">
-                {item.icon}
-              </div>
+              <div className="text-primary">{item.icon}</div>
               <div>
                 <h3 className="text-base md:text-lg font-bold text-text-dark  mb-1 whitespace-nowrap">
                   {item.title}
