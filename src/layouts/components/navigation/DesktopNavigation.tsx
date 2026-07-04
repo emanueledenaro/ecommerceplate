@@ -1,6 +1,5 @@
 "use client";
 
-import LocaleSwitcher from "@/components/LocaleSwitcher";
 import NavUser from "@/components/NavUser";
 import SearchBar from "@/components/SearchBar";
 import type config from "@/config/config.json";
@@ -191,8 +190,6 @@ const DesktopNavigation: React.FC<DesktopNavigationProps> = ({
             {navigationButton.label}
           </Link>
         ) : null}
-
-        <LocaleSwitcher placement="bottom" />
 
         {settings.account ? <NavUser /> : null}
 

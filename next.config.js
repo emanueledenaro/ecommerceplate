@@ -17,18 +17,11 @@ const nextConfig = {
     "/**": ["src/content/**/*"],
   },
   async redirects() {
-    return [
-      {
-        source: "/es-mx",
-        destination: "/mx",
-        permanent: true,
-      },
-      {
-        source: "/es-mx/:path*",
-        destination: "/mx/:path*",
-        permanent: true,
-      },
-    ];
+    // Vecchi prefissi di mercato/lingua: il sito ora vive senza prefisso.
+    return ["es-mx", "mx", "it", "en"].flatMap((prefix) => [
+      { source: `/${prefix}`, destination: "/", permanent: true },
+      { source: `/${prefix}/:path*`, destination: "/:path*", permanent: true },
+    ]);
   },
   images: {
     remotePatterns: [

@@ -9,12 +9,6 @@ const siteUrl = (process.env.SITE_URL || config.site.base_url).replace(
 const sitemapConfig = {
   siteUrl,
   generateRobotsTxt: true,
-  alternateRefs: [
-    { href: `${siteUrl}/mx`, hreflang: "es-MX" },
-    { href: `${siteUrl}/it`, hreflang: "it-IT" },
-    { href: `${siteUrl}/en`, hreflang: "en-US" },
-    { href: `${siteUrl}/mx`, hreflang: "x-default" },
-  ],
 };
 
 export default sitemapConfig;

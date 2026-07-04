@@ -11,15 +11,12 @@ import { useRouter } from "@/i18n/navigation";
 import { fetchUser } from "@/layouts/components/NavUser";
 import type { Order, OrderLineItem } from "@/lib/shopify/types";
 import { BsBox } from "react-icons/bs";
-import { useTranslations, useLocale } from "next-intl";
-import { localeToIntl } from "@/lib/i18n/config";
-import type { Locale } from "@/lib/i18n/config";
+import { useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/i18n/config";
 
 const OrdersPage = () => {
   const router = useRouter();
   const t = useTranslations("orders");
-  const locale = useLocale();
-  const intlLocale = localeToIntl[locale as Locale];
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 

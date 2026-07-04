@@ -41,6 +41,7 @@ npm run remove-darkmode
   - Route groups: `(auth)` for login/sign-up pages
   - Dynamic routes: `[regular]` for markdown pages, `products/[slug]` for product details
   - API routes: `api/customer/` for authentication endpoints, `api/revalidate` for Shopify webhooks
+  - **Single market**: the storefront targets Mexico only (`es-MX`, Shopify context `{country: MX, language: ES}` in `src/lib/i18n/config.ts`). There is no locale routing: next-intl serves `src/messages/es-mx.json` as the only message catalog, and legacy prefixes (`/mx`, `/it`, `/en`, `/es-mx`) are permanently redirected to unprefixed URLs via `next.config.js`.
 - **`src/layouts/`**: Reusable template components, partials, and shortcodes
   - `components/`: Shared UI components (Header, Footer, Cart, NavUser, SearchBar, etc.)
   - `shortcodes/`: MDX components for content (Tabs, Accordion, Button, etc.)

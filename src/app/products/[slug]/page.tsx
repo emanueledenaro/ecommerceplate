@@ -18,35 +18,24 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { localeToShopify, resolveRouteLocale } from "@/lib/i18n/config";
-import type { Locale } from "@/lib/i18n/config";
+import { getTranslations } from "next-intl/server";
+import { shopifyContext } from "@/lib/i18n/config";
 import { getMetadataAlternates } from "@/lib/i18n/metadata";
 
 export const generateMetadata = async (props: {
-  params: Promise<{ locale: string; slug: string }>;
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> => {
   const params = await props.params;
-  const normalizedLocale = resolveRouteLocale(params.locale);
-
-  if (!normalizedLocale) return notFound();
-
-  const context = localeToShopify[normalizedLocale as Locale];
-  const product = await getProduct(params.slug, context);
+  const product = await getProduct(params.slug, shopifyContext);
   if (!product) return notFound();
   return {
     title: product.seo.title || product.title,
     description: product.seo.description || product.description,
-    alternates: getMetadataAlternates(
-      normalizedLocale as Locale,
-      `/products/${params.slug}`,
-    ),
+    alternates: getMetadataAlternates(`/products/${params.slug}`),
   };
 };
 
-const ProductSingle = async (props: {
-  params: Promise<{ locale: string; slug: string }>;
-}) => {
+const ProductSingle = async (props: { params: Promise<{ slug: string }> }) => {
   const params = await props.params;
   return (
     <Suspense fallback={<LoadingProductGallery />}>
@@ -57,21 +46,12 @@ const ProductSingle = async (props: {
 
 export default ProductSingle;
 
-const ShowProductSingle = async ({
-  params,
-}: {
-  params: { locale: string; slug: string };
-}) => {
-  const normalizedLocale = resolveRouteLocale(params.locale);
-
-  if (!normalizedLocale) return notFound();
-
-  setRequestLocale(normalizedLocale);
+const ShowProductSingle = async ({ params }: { params: { slug: string } }) => {
   const [t, tCommon] = await Promise.all([
     getTranslations("product"),
     getTranslations("common"),
   ]);
-  const context = localeToShopify[normalizedLocale as Locale];
+  const context = shopifyContext;
 
   const paymentsAndDelivery = getListPage("sections/payments-and-delivery.md");
   const { payment_methods, estimated_delivery } =

@@ -1,8 +1,6 @@
 "use client";
 
-import { useLocale } from "next-intl";
-import { localeToIntl } from "@/lib/i18n/config";
-import type { Locale } from "@/lib/i18n/config";
+import { intlLocale } from "@/lib/i18n/config";
 
 const Price = ({
   amount,
@@ -19,8 +17,6 @@ const Price = ({
   currencyCodeClassName?: string;
   showCurrencyCode?: boolean;
 } & React.ComponentProps<"p">) => {
-  const locale = useLocale();
-  const intlLocale = localeToIntl[locale as Locale] || locale;
   const Component = as;
 
   return (

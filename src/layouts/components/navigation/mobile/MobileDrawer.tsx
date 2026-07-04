@@ -1,6 +1,5 @@
 "use client";
 
-import LocaleSwitcher from "@/components/LocaleSwitcher";
 import Logo from "@/components/Logo";
 import { fetchUser } from "@/components/NavUser";
 import SearchBar from "@/components/SearchBar";
@@ -262,20 +261,15 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({
         </div>
 
         <div className="border-t border-border/60 px-6 py-6 ">
-          <div className="flex items-center justify-between">
-            {navigationButton?.enable ? (
-              <Link
-                href={navigationButton.link}
-                onClick={onClose}
-                className="btn btn-outline-primary py-3 text-base"
-              >
-                {navigationButton.label}
-              </Link>
-            ) : (
-              <div />
-            )}
-            <LocaleSwitcher placement="top" showCaret={false} />
-          </div>
+          {navigationButton?.enable ? (
+            <Link
+              href={navigationButton.link}
+              onClick={onClose}
+              className="btn btn-outline-primary py-3 text-base"
+            >
+              {navigationButton.label}
+            </Link>
+          ) : null}
         </div>
       </div>
     </>

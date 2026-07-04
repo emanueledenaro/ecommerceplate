@@ -23,11 +23,9 @@ import CallToAction from "@/partials/CallToAction";
 import ProductCardView from "@/partials/ProductCardView";
 import ProductListView from "@/partials/ProductListView";
 import { Suspense } from "react";
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { localeToShopify, resolveRouteLocale } from "@/lib/i18n/config";
-import type { Locale } from "@/lib/i18n/config";
+import { getTranslations } from "next-intl/server";
+import { shopifyContext } from "@/lib/i18n/config";
 import { getMetadataAlternates } from "@/lib/i18n/metadata";
-import { notFound } from "next/navigation";
 
 interface SearchParams {
   sort?: string;
@@ -39,25 +37,13 @@ interface SearchParams {
   t?: string;
 }
 
-export const generateMetadata = async (props: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> => {
-  const { locale } = await props.params;
-  const normalizedLocale = resolveRouteLocale(locale);
-
-  if (!normalizedLocale) {
-    notFound();
-  }
-
-  const t = await getTranslations({
-    locale: normalizedLocale,
-    namespace: "products",
-  });
+export const generateMetadata = async (): Promise<Metadata> => {
+  const t = await getTranslations("products");
 
   return {
     title: t("allProducts"),
     description: t("seeAllProducts"),
-    alternates: getMetadataAlternates(normalizedLocale as Locale, "/products"),
+    alternates: getMetadataAlternates("/products"),
   };
 };
 
@@ -227,18 +213,9 @@ const ShowProducts = async ({
 };
 
 const ProductsListPage = async (props: {
-  params: Promise<{ locale: string }>;
   searchParams: Promise<SearchParams>;
 }) => {
-  const { locale } = await props.params;
-  const normalizedLocale = resolveRouteLocale(locale);
-
-  if (!normalizedLocale) {
-    notFound();
-  }
-
-  setRequestLocale(normalizedLocale);
-  const context = localeToShopify[normalizedLocale as Locale];
+  const context = shopifyContext;
   const searchParams = await props.searchParams;
   const callToAction = getListPage("sections/call-to-action.md");
 

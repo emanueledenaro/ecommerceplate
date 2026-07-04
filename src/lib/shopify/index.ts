@@ -166,6 +166,28 @@ export async function shopifyFetch<T>({
   }
 }
 
+// Rende una lettura Shopify tollerante ai guasti: se lo Storefront API non
+// risponde (es. 404/rete), logga un warning e restituisce un fallback vuoto
+// così la UI mostra la sezione senza prodotti invece di andare in crash.
+async function withShopifyFallback<T>(
+  label: string,
+  fallback: T,
+  operation: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof ShopifyFetchError) {
+      console.warn(
+        `[shopify] ${label} non disponibile (status ${error.status}: ${error.reason ?? error.message}). Restituisco un risultato vuoto.`,
+      );
+      return fallback;
+    }
+
+    throw error;
+  }
+}
+
 const removeEdgesAndNodes = (array: Connection<any>) => {
   return array.edges.map((edge) => edge?.node);
 };
@@ -379,16 +401,25 @@ export async function getCollection(
   handle: string,
   context?: ShopifyContext,
 ): Promise<Collection | undefined> {
-  const res = await shopifyFetch<ShopifyCollectionOperation>({
-    query: getCollectionQuery,
-    tags: [TAGS.collections],
-    variables: {
-      handle,
-      ...(context && { country: context.country, language: context.language }),
-    },
-  });
+  return withShopifyFallback<Collection | undefined>(
+    "getCollection",
+    undefined,
+    async () => {
+      const res = await shopifyFetch<ShopifyCollectionOperation>({
+        query: getCollectionQuery,
+        tags: [TAGS.collections],
+        variables: {
+          handle,
+          ...(context && {
+            country: context.country,
+            language: context.language,
+          }),
+        },
+      });
 
-  return reshapeCollection(res.body.data.collection);
+      return reshapeCollection(res.body.data.collection);
+    },
+  );
 }
 
 export async function getCollectionProducts({
@@ -404,30 +435,38 @@ export async function getCollectionProducts({
   filterCategoryProduct?: unknown[];
   context?: ShopifyContext;
 }): Promise<{ pageInfo: PageInfo | null; products: Product[] }> {
-  const res = await shopifyFetch<ShopifyCollectionProductsOperation>({
-    query: getCollectionProductsQuery,
-    tags: [TAGS.collections, TAGS.products],
-    variables: {
-      handle: collection,
-      reverse,
-      sortKey: sortKey === "CREATED_AT" ? "CREATED" : sortKey,
-      filterCategoryProduct,
-      ...(context && { country: context.country, language: context.language }),
-    },
+  return withShopifyFallback<{
+    pageInfo: PageInfo | null;
+    products: Product[];
+  }>("getCollectionProducts", { pageInfo: null, products: [] }, async () => {
+    const res = await shopifyFetch<ShopifyCollectionProductsOperation>({
+      query: getCollectionProductsQuery,
+      tags: [TAGS.collections, TAGS.products],
+      variables: {
+        handle: collection,
+        reverse,
+        sortKey: sortKey === "CREATED_AT" ? "CREATED" : sortKey,
+        filterCategoryProduct,
+        ...(context && {
+          country: context.country,
+          language: context.language,
+        }),
+      },
+    });
+
+    if (!res.body.data.collection) {
+      return { pageInfo: null, products: [] };
+    }
+
+    const pageInfo = res.body.data?.collection?.products?.pageInfo;
+
+    return {
+      pageInfo,
+      products: reshapeProducts(
+        removeEdgesAndNodes(res.body.data.collection.products),
+      ),
+    };
   });
-
-  if (!res.body.data.collection) {
-    return { pageInfo: null, products: [] };
-  }
-
-  const pageInfo = res.body.data?.collection?.products?.pageInfo;
-
-  return {
-    pageInfo,
-    products: reshapeProducts(
-      removeEdgesAndNodes(res.body.data.collection.products),
-    ),
-  };
 }
 
 export async function createCustomer(input: CustomerInput): Promise<any> {
@@ -488,47 +527,59 @@ export async function getCustomerOrders(accessToken: string): Promise<Order[]> {
 export async function getCollections(
   context?: ShopifyContext,
 ): Promise<Collection[]> {
-  const res = await shopifyFetch<ShopifyCollectionsOperation>({
-    query: getCollectionsQuery,
-    tags: [TAGS.collections],
-    variables: {
-      ...(context && { country: context.country, language: context.language }),
-    },
-  });
-  const shopifyCollections = removeEdgesAndNodes(res.body?.data?.collections);
-  const collections = [
-    // Filter out the `hidden` collections.
-    // Collections that start with `hidden-*` need to be hidden on the search page.
-    ...reshapeCollections(shopifyCollections).filter(
-      (collection) => !collection.handle.startsWith("hidden"),
-    ),
-  ];
+  return withShopifyFallback<Collection[]>("getCollections", [], async () => {
+    const res = await shopifyFetch<ShopifyCollectionsOperation>({
+      query: getCollectionsQuery,
+      tags: [TAGS.collections],
+      variables: {
+        ...(context && {
+          country: context.country,
+          language: context.language,
+        }),
+      },
+    });
+    const shopifyCollections = removeEdgesAndNodes(res.body?.data?.collections);
+    const collections = [
+      // Filter out the `hidden` collections.
+      // Collections that start with `hidden-*` need to be hidden on the search page.
+      ...reshapeCollections(shopifyCollections).filter(
+        (collection) => !collection.handle.startsWith("hidden"),
+      ),
+    ];
 
-  return collections;
+    return collections;
+  });
 }
 
 export async function getMenu(
   handle: string,
   context?: ShopifyContext,
 ): Promise<Menu[]> {
-  const res = await shopifyFetch<ShopifyMenuOperation>({
-    query: getMenuQuery,
-    tags: [TAGS.collections],
-    variables: {
-      handle,
-      ...(context && { country: context.country, language: context.language }),
-    },
-  });
+  return withShopifyFallback<Menu[]>("getMenu", [], async () => {
+    const res = await shopifyFetch<ShopifyMenuOperation>({
+      query: getMenuQuery,
+      tags: [TAGS.collections],
+      variables: {
+        handle,
+        ...(context && {
+          country: context.country,
+          language: context.language,
+        }),
+      },
+    });
 
-  return (
-    res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
-      title: item.title,
-      path: item.url
-        .replace(domain, "")
-        .replace("/collections", "/search")
-        .replace("/pages", ""),
-    })) || []
-  );
+    return (
+      res.body?.data?.menu?.items.map(
+        (item: { title: string; url: string }) => ({
+          title: item.title,
+          path: item.url
+            .replace(domain, "")
+            .replace("/collections", "/search")
+            .replace("/pages", ""),
+        }),
+      ) || []
+    );
+  });
 }
 
 export async function getPage(
@@ -561,32 +612,50 @@ export async function getProduct(
   handle: string,
   context?: ShopifyContext,
 ): Promise<Product | undefined> {
-  const res = await shopifyFetch<ShopifyProductOperation>({
-    query: getProductQuery,
-    tags: [TAGS.products],
-    variables: {
-      handle,
-      ...(context && { country: context.country, language: context.language }),
-    },
-  });
+  return withShopifyFallback<Product | undefined>(
+    "getProduct",
+    undefined,
+    async () => {
+      const res = await shopifyFetch<ShopifyProductOperation>({
+        query: getProductQuery,
+        tags: [TAGS.products],
+        variables: {
+          handle,
+          ...(context && {
+            country: context.country,
+            language: context.language,
+          }),
+        },
+      });
 
-  return reshapeProduct(res.body.data.product, false);
+      return reshapeProduct(res.body.data.product, false);
+    },
+  );
 }
 
 export async function getProductRecommendations(
   productId: string,
   context?: ShopifyContext,
 ): Promise<Product[]> {
-  const res = await shopifyFetch<ShopifyProductRecommendationsOperation>({
-    query: getProductRecommendationsQuery,
-    tags: [TAGS.products],
-    variables: {
-      productId,
-      ...(context && { country: context.country, language: context.language }),
-    },
-  });
+  return withShopifyFallback<Product[]>(
+    "getProductRecommendations",
+    [],
+    async () => {
+      const res = await shopifyFetch<ShopifyProductRecommendationsOperation>({
+        query: getProductRecommendationsQuery,
+        tags: [TAGS.products],
+        variables: {
+          productId,
+          ...(context && {
+            country: context.country,
+            language: context.language,
+          }),
+        },
+      });
 
-  return reshapeProducts(res.body.data.productRecommendations);
+      return reshapeProducts(res.body.data.productRecommendations);
+    },
+  );
 }
 
 export async function getVendors({
@@ -600,37 +669,47 @@ export async function getVendors({
   sortKey?: string;
   context?: ShopifyContext;
 }): Promise<{ vendor: string; productCount: number }[]> {
-  const res = await shopifyFetch<ShopifyProductsOperation>({
-    query: getVendorsQuery,
-    tags: [TAGS.products],
-    variables: {
-      query,
-      reverse,
-      sortKey,
-      ...(context && { country: context.country, language: context.language }),
+  return withShopifyFallback<{ vendor: string; productCount: number }[]>(
+    "getVendors",
+    [],
+    async () => {
+      const res = await shopifyFetch<ShopifyProductsOperation>({
+        query: getVendorsQuery,
+        tags: [TAGS.products],
+        variables: {
+          query,
+          reverse,
+          sortKey,
+          ...(context && {
+            country: context.country,
+            language: context.language,
+          }),
+        },
+      });
+
+      const products = removeEdgesAndNodes(res.body.data.products);
+
+      const vendorProductCounts: { vendor: string; productCount: number }[] =
+        [];
+
+      products.forEach((product) => {
+        const vendor = product.vendor;
+        if (vendor) {
+          const existingVendor = vendorProductCounts.find(
+            (v) => v.vendor === vendor,
+          );
+
+          if (existingVendor) {
+            existingVendor.productCount++;
+          } else {
+            vendorProductCounts.push({ vendor, productCount: 1 });
+          }
+        }
+      });
+
+      return vendorProductCounts;
     },
-  });
-
-  const products = removeEdgesAndNodes(res.body.data.products);
-
-  const vendorProductCounts: { vendor: string; productCount: number }[] = [];
-
-  products.forEach((product) => {
-    const vendor = product.vendor;
-    if (vendor) {
-      const existingVendor = vendorProductCounts.find(
-        (v) => v.vendor === vendor,
-      );
-
-      if (existingVendor) {
-        existingVendor.productCount++;
-      } else {
-        vendorProductCounts.push({ vendor, productCount: 1 });
-      }
-    }
-  });
-
-  return vendorProductCounts;
+  );
 }
 
 export async function getTags({
@@ -644,18 +723,23 @@ export async function getTags({
   sortKey?: string;
   context?: ShopifyContext;
 }): Promise<Product[]> {
-  const res = await shopifyFetch<ShopifyProductsOperation>({
-    query: getProductsQuery,
-    tags: [TAGS.products],
-    variables: {
-      query,
-      reverse,
-      sortKey,
-      ...(context && { country: context.country, language: context.language }),
-    },
-  });
+  return withShopifyFallback<Product[]>("getTags", [], async () => {
+    const res = await shopifyFetch<ShopifyProductsOperation>({
+      query: getProductsQuery,
+      tags: [TAGS.products],
+      variables: {
+        query,
+        reverse,
+        sortKey,
+        ...(context && {
+          country: context.country,
+          language: context.language,
+        }),
+      },
+    });
 
-  return reshapeProducts(removeEdgesAndNodes(res.body.data.products));
+    return reshapeProducts(removeEdgesAndNodes(res.body.data.products));
+  });
 }
 
 export async function getProducts({
@@ -671,24 +755,36 @@ export async function getProducts({
   cursor?: string;
   context?: ShopifyContext;
 }): Promise<{ pageInfo: PageInfo; products: Product[] }> {
-  const res = await shopifyFetch<ShopifyProductsOperation>({
-    query: getProductsQuery,
-    tags: [TAGS.products],
-    variables: {
-      query,
-      reverse,
-      sortKey,
-      cursor,
-      ...(context && { country: context.country, language: context.language }),
+  return withShopifyFallback<{ pageInfo: PageInfo; products: Product[] }>(
+    "getProducts",
+    {
+      pageInfo: { hasNextPage: false, hasPreviousPage: false, endCursor: "" },
+      products: [],
     },
-  });
+    async () => {
+      const res = await shopifyFetch<ShopifyProductsOperation>({
+        query: getProductsQuery,
+        tags: [TAGS.products],
+        variables: {
+          query,
+          reverse,
+          sortKey,
+          cursor,
+          ...(context && {
+            country: context.country,
+            language: context.language,
+          }),
+        },
+      });
 
-  const pageInfo = res.body.data?.products?.pageInfo;
+      const pageInfo = res.body.data?.products?.pageInfo;
 
-  return {
-    pageInfo,
-    products: reshapeProducts(removeEdgesAndNodes(res.body.data.products)),
-  };
+      return {
+        pageInfo,
+        products: reshapeProducts(removeEdgesAndNodes(res.body.data.products)),
+      };
+    },
+  );
 }
 
 export async function getHighestProductPrice(
@@ -713,8 +809,8 @@ export async function getHighestProductPrice(
 
     return highestProductPrice || null;
   } catch (error) {
-    console.log("Error fetching highest product price:", error);
-    throw error;
+    console.warn("Error fetching highest product price:", error);
+    return null;
   }
 }
 
