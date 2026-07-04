@@ -4,6 +4,13 @@ html {
 
 body {
   @apply bg-body text-base  font-primary font-normal leading-relaxed text-text;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Selezione del testo brandizzata (evita il blu di sistema) */
+::selection {
+  background-color: rgba(255, 122, 89, 0.25);
+  color: inherit;
 }
 
 h1,

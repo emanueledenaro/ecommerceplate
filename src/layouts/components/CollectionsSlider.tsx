@@ -12,7 +12,7 @@ const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
     <div className="relative">
       {/* Riga unica: scroll orizzontale con snap su mobile, distribuita su desktop */}
       <ul
-        className="flex gap-4 md:gap-6 overflow-x-auto md:overflow-visible md:justify-center snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 pb-4 md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex gap-4 md:gap-6 overflow-x-auto md:overflow-visible md:justify-center snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 pb-4 md:pb-0 select-none touch-pan-x md:touch-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label={t("productCount", { count: collections.length })}
       >
         {collections.map((item, index) => {
