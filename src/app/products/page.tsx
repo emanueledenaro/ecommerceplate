@@ -3,6 +3,7 @@ import LoadingProducts from "@/layouts/components/loadings/skeleton/SkeletonProd
 import ActiveFilters from "@/components/ActiveFilters";
 import CategoryHeader from "@/components/CategoryHeader";
 import EmptyState from "@/components/EmptyState";
+import SubcategoryChips from "@/components/SubcategoryChips";
 import ProductLayouts from "@/components/product/ProductLayouts";
 import { defaultSort, sorting } from "@/lib/constants";
 import { getListPage } from "@/lib/contentParser";
@@ -19,6 +20,7 @@ import {
   extractFiltersFromSearchParams,
   hasActiveFilters,
 } from "@/lib/utils/productQueryBuilder";
+import { getAvailableSubcategories, getSubcategory } from "@/lib/subcategories";
 import CallToAction from "@/partials/CallToAction";
 import ProductCardView from "@/partials/ProductCardView";
 import ProductListView from "@/partials/ProductListView";
@@ -35,6 +37,7 @@ interface SearchParams {
   b?: string;
   c?: string;
   t?: string;
+  sub?: string;
 }
 
 export const generateMetadata = async (): Promise<Metadata> => {
@@ -62,6 +65,7 @@ const ShowProducts = async ({
     b: brand,
     c: category,
     t: tag,
+    sub: subcategory,
   } = searchParams as {
     [key: string]: string;
   };
@@ -148,9 +152,23 @@ const ShowProducts = async ({
   const vendors = await getVendors({ context });
 
   // Find current category if present
-  if (category && category !== "all") {
+  const inCategory = Boolean(category && category !== "all");
+  if (inCategory) {
     currentCategory = categories.find((cat) => cat.handle === category);
   }
+
+  // Sottocategorie (derivate dal Product Type) disponibili nel mondo corrente,
+  // più il filtro sulla sottocategoria selezionata.
+  const availableSubcategories = inCategory
+    ? getAvailableSubcategories(productsData.products)
+    : [];
+  const displayProducts =
+    inCategory && subcategory
+      ? productsData.products.filter(
+          (product: Product) =>
+            getSubcategory(product.productType) === subcategory,
+        )
+      : productsData.products;
 
   const tags = [
     ...new Set(
@@ -160,7 +178,7 @@ const ShowProducts = async ({
 
   const maxPriceData = await getHighestProductPrice(context);
 
-  const productCount = productsData?.products?.length || 0;
+  const productCount = displayProducts.length;
   const hasProducts = productCount > 0;
 
   return (
@@ -175,6 +193,12 @@ const ShowProducts = async ({
       {/* Main Content with vertical spacing */}
       <div className="py-12 md:py-16">
         <div className="container">
+          {/* Sottocategorie del mondo animale corrente */}
+          <SubcategoryChips
+            subcategories={availableSubcategories}
+            selected={subcategory}
+          />
+
           {/* Active Filters with removable chips */}
           <ActiveFilters filters={filters} />
 
@@ -196,13 +220,13 @@ const ShowProducts = async ({
           ) : layout === "list" ? (
             <ProductListView
               searchParams={searchParams as Record<string, string | undefined>}
-              initialProducts={productsData.products}
+              initialProducts={displayProducts}
               initialPageInfo={productsData.pageInfo}
             />
           ) : (
             <ProductCardView
               searchParams={searchParams as Record<string, string | undefined>}
-              initialProducts={productsData.products}
+              initialProducts={displayProducts}
               initialPageInfo={productsData.pageInfo}
             />
           )}

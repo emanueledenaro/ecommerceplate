@@ -92,6 +92,7 @@
   },
   "products": {
     "allProducts": "Todos los Productos",
+    "allSubcategories": "Todo",
     "resultsFor": "Resultados para \"{query}\"",
     "productCount": "{count} {count, plural, one {producto} other {productos}}",
     "found": "encontrados",

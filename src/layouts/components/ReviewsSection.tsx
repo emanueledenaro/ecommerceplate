@@ -94,14 +94,14 @@ const ReviewsSection = () => {
             640: { slidesPerView: 2 },
             1024: { slidesPerView: 3 },
           }}
-          className="pb-12 [&_.swiper-wrapper]:items-stretch [&_.swiper-slide]:h-auto [&_.swiper-slide]:self-stretch"
+          className="px-2 pt-2 pb-10 [&_.swiper-wrapper]:items-stretch [&_.swiper-slide]:h-auto [&_.swiper-slide]:self-stretch"
         >
           {reviews.map((review, index) => (
             <SwiperSlide
               key={review.name}
               style={{ height: "auto", display: "flex" }}
             >
-              <article className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-border/30 bg-white p-6 md:p-7 shadow-lg/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+              <article className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-border/30 bg-white p-6 shadow-[0_12px_28px_rgba(31,41,55,0.08)] transition-colors duration-200 hover:border-primary/25 md:p-7">
                 {/* Quote decorativa */}
                 <span
                   aria-hidden="true"
@@ -162,7 +162,7 @@ const ReviewsSection = () => {
         </Swiper>
 
         {/* Trust indicators */}
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-8 md:gap-12">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-8 md:mt-10 md:gap-12">
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
               10.000+

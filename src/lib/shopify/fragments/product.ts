@@ -65,6 +65,7 @@ const productFragment = /* GraphQL */ `
       ...seo
     }
     tags
+    productType
     updatedAt
     vendor
     collections(first: 100) {
