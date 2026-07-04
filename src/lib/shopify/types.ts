@@ -37,7 +37,6 @@ export type user = {
 };
 
 export type OrderLineItem = {
-  id: string;
   title: string;
   quantity: number;
   variant: {
@@ -50,11 +49,11 @@ export type OrderLineItem = {
       height: number;
     } | null;
     price: Money;
-  } | null;
-  product: {
-    id: string;
-    handle: string;
-    title: string;
+    product: {
+      id: string;
+      handle: string;
+      title: string;
+    } | null;
   } | null;
 };
 

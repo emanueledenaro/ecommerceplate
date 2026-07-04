@@ -177,12 +177,15 @@ const OrdersPage = () => {
 
                       {/* Line Items */}
                       <div className="space-y-3">
-                        {lineItems.map((item: OrderLineItem) => (
-                          <div key={item.id} className="flex gap-4 items-start">
+                        {lineItems.map((item: OrderLineItem, index) => (
+                          <div
+                            key={item.variant?.id ?? `${item.title}-${index}`}
+                            className="flex gap-4 items-start"
+                          >
                             {item.variant?.image && (
                               <div className="flex-shrink-0">
                                 <Link
-                                  href={`/products/${item.product?.handle || ""}`}
+                                  href={`/products/${item.variant?.product?.handle || ""}`}
                                 >
                                   <ImageFallback
                                     src={item.variant.image.url}
@@ -198,7 +201,7 @@ const OrdersPage = () => {
                             )}
                             <div className="flex-1 min-w-0">
                               <Link
-                                href={`/products/${item.product?.handle || ""}`}
+                                href={`/products/${item.variant?.product?.handle || ""}`}
                                 className="font-medium text-text-dark  hover:text-primary  transition-colors"
                               >
                                 {item.title}

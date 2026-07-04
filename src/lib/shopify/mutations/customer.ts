@@ -80,7 +80,6 @@ export const getCustomerOrdersQuery = /* GraphQL */ `
             lineItems(first: 100) {
               edges {
                 node {
-                  id
                   title
                   quantity
                   variant {
@@ -96,11 +95,11 @@ export const getCustomerOrdersQuery = /* GraphQL */ `
                       amount
                       currencyCode
                     }
-                  }
-                  product {
-                    id
-                    handle
-                    title
+                    product {
+                      id
+                      handle
+                      title
+                    }
                   }
                 }
               }
