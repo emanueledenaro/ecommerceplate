@@ -71,7 +71,7 @@ All Shopify interactions happen through `src/lib/shopify/index.ts`:
 - `SHOPIFY_STOREFRONT_ACCESS_TOKEN`: Storefront API access token
 - `SHOPIFY_API_SECRET_KEY`: Used to verify webhook signatures
 
-**Collections Configuration**: The hero slider and featured products sections use collections defined in `src/config/config.json` under `shopify.collections` (e.g., `"hero_slider": "hidden-homepage-carousel"`). Collections starting with `hidden-` are filtered out from search/catalog pages.
+**Collections Configuration**: The homepage category slider shows all Shopify collections. Collections starting with `hidden-` are filtered out from search/catalog pages.
 
 ### TypeScript Configuration
 
@@ -208,6 +208,5 @@ See `AGENTS.md` for full Definition of Done. Key points:
 ## Additional Resources
 
 - **Setup guide**: See README.md for Shopify partner account setup and token retrieval
-- **Hero slider setup**: Configure collections in `src/config/config.json` under `shopify.collections.hero_slider`
 - **Demo products**: Import from `public/products.csv` in Shopify admin
 - **Documentation**: Internal docs in `docs/` for workflows, onboarding, and handoff procedures

@@ -8,19 +8,15 @@ import ReviewsSection from "@/components/ReviewsSection";
 import ValueProposition from "@/components/ValueProposition";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import SkeletonCategory from "@/layouts/components/loadings/skeleton/SkeletonCategory";
-import SkeletonFeaturedProducts from "@/layouts/components/loadings/skeleton/SkeletonFeaturedProducts";
 import config from "@/config/config.json";
 import { getListPage } from "@/lib/contentParser";
-import { getCollectionProducts, getCollections } from "@/lib/shopify";
+import { getCollections } from "@/lib/shopify";
 import CallToAction from "@/partials/CallToAction";
-import FeaturedProducts from "@/partials/FeaturedProducts";
 import { getMetadataAlternates } from "@/lib/i18n/metadata";
 import SeoMeta from "@/partials/SeoMeta";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { shopifyContext } from "@/lib/i18n/config";
-
-const { collections } = config.shopify;
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const t = await getTranslations("common");
@@ -39,19 +35,6 @@ const ShowCollections = async ({
 }) => {
   const allCollections = await getCollections(context);
   return <CollectionsSlider collections={allCollections} />;
-};
-
-const ShowFeaturedProducts = async ({
-  context,
-}: {
-  context?: { country: string; language: string };
-}) => {
-  const { pageInfo, products } = await getCollectionProducts({
-    collection: collections.featured_products,
-    reverse: false,
-    context,
-  });
-  return <FeaturedProducts products={products} />;
 };
 
 const Home = async () => {
@@ -97,21 +80,6 @@ const Home = async () => {
           </div>
           <Suspense fallback={<SkeletonCategory />}>
             <ShowCollections context={context} />
-          </Suspense>
-        </div>
-      </section>
-
-      {/* Featured Products section  */}
-      <section className="pb-16">
-        <div className="container">
-          <div className="text-center mb-6 md:mb-14">
-            <h2 className="mb-3">{t("featuredProducts")}</h2>
-            <p className="text-lg text-text  max-w-2xl mx-auto">
-              {t("featuredProductsDescription")}
-            </p>
-          </div>
-          <Suspense fallback={<SkeletonFeaturedProducts />}>
-            <ShowFeaturedProducts context={context} />
           </Suspense>
         </div>
       </section>
