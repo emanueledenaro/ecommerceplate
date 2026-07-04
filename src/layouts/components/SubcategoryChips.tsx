@@ -2,13 +2,32 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import type { IconType } from "react-icons";
+import {
+  FaBowlFood,
+  FaSoap,
+  FaKitMedical,
+  FaBaseball,
+  FaHouse,
+  FaTag,
+  FaLayerGroup,
+} from "react-icons/fa6";
 import { createUrl } from "@/lib/utils";
-import { SUBCATEGORY_EMOJI } from "@/lib/subcategories";
 
 interface SubcategoryChipsProps {
   subcategories: string[];
   selected?: string;
 }
+
+// Icona per ogni sottocategoria (fallback: FaTag).
+const SUBCATEGORY_ICON: Record<string, IconType> = {
+  Alimentación: FaBowlFood,
+  Higiene: FaSoap,
+  Salud: FaKitMedical,
+  Juguetes: FaBaseball,
+  Jaulas: FaHouse,
+  Accesorios: FaTag,
+};
 
 const SubcategoryChips = ({
   subcategories,
@@ -31,38 +50,48 @@ const SubcategoryChips = ({
     router.push(createUrl("/products", params), { scroll: false });
   };
 
-  const chip = (active: boolean) =>
-    `inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+  const chipClass = (active: boolean) =>
+    `group inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all duration-200 ${
       active
-        ? "bg-primary text-white shadow-sm"
-        : "bg-light text-text-dark hover:bg-primary/10 hover:text-primary"
+        ? "border-primary bg-primary text-white shadow-md shadow-primary/20"
+        : "border-border bg-white text-text-dark hover:-translate-y-0.5 hover:border-primary/60 hover:text-primary hover:shadow-sm"
     }`;
 
+  const iconClass = (active: boolean) =>
+    `text-[0.95em] transition-colors ${active ? "text-white" : "text-primary"}`;
+
   return (
-    <div className="mb-8 flex flex-wrap justify-center gap-2 md:gap-3">
+    <nav
+      aria-label={t("allProducts")}
+      className="mb-10 flex flex-wrap justify-center gap-2.5 md:gap-3"
+    >
       <button
         type="button"
         onClick={() => go()}
-        className={chip(!selected)}
+        className={chipClass(!selected)}
         aria-pressed={!selected}
       >
+        <FaLayerGroup className={iconClass(!selected)} aria-hidden="true" />
         {t("allSubcategories")}
       </button>
-      {subcategories.map((sub) => (
-        <button
-          key={sub}
-          type="button"
-          onClick={() => go(sub)}
-          className={chip(selected === sub)}
-          aria-pressed={selected === sub}
-        >
-          {SUBCATEGORY_EMOJI[sub] ? (
-            <span aria-hidden="true">{SUBCATEGORY_EMOJI[sub]}</span>
-          ) : null}
-          {sub}
-        </button>
-      ))}
-    </div>
+
+      {subcategories.map((sub) => {
+        const Icon = SUBCATEGORY_ICON[sub] ?? FaTag;
+        const active = selected === sub;
+        return (
+          <button
+            key={sub}
+            type="button"
+            onClick={() => go(sub)}
+            className={chipClass(active)}
+            aria-pressed={active}
+          >
+            <Icon className={iconClass(active)} aria-hidden="true" />
+            {sub}
+          </button>
+        );
+      })}
+    </nav>
   );
 };
 

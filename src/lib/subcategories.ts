@@ -17,16 +17,6 @@ export const SUBCATEGORY_ORDER = [
   "Accesorios",
 ] as const;
 
-// Emoji per sottocategoria (fallback: nessuna).
-export const SUBCATEGORY_EMOJI: Record<string, string> = {
-  Alimentación: "🍖",
-  Higiene: "🧼",
-  Salud: "💊",
-  Juguetes: "🎾",
-  Jaulas: "🏠",
-  Accesorios: "🎀",
-};
-
 /** Ricava la sottocategoria dal Product Type ("Higiene para Gatos" → "Higiene"). */
 export const getSubcategory = (productType?: string | null): string | null => {
   if (!productType) return null;
