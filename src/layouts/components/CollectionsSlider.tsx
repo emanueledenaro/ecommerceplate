@@ -10,9 +10,9 @@ const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
 
   return (
     <div className="relative">
-      {/* Riga unica: scroll orizzontale con snap su mobile, distribuita su desktop */}
+      {/* Mobile: griglia 3x2 tutta visibile | Desktop: riga unica centrata */}
       <ul
-        className="flex gap-4 md:gap-6 overflow-x-auto md:overflow-visible md:justify-center snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 pb-4 md:pb-0 select-none touch-pan-x md:touch-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="grid grid-cols-3 gap-x-2 gap-y-6 justify-items-center md:flex md:justify-center md:gap-6 select-none"
         aria-label={t("productCount", { count: collections.length })}
       >
         {collections.map((item, index) => {
@@ -22,7 +22,7 @@ const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
           return (
             <li
               key={handle}
-              className="snap-start shrink-0 w-28 sm:w-32 md:w-36 opacity-0 animate-[fadeUp_.5s_ease-out_forwards]"
+              className="w-full max-w-32 sm:max-w-36 md:w-40 md:max-w-none md:shrink-0 opacity-0 animate-[fadeUp_.5s_ease-out_forwards]"
               style={{ animationDelay: `${index * 70}ms` }}
             >
               <Link
@@ -32,7 +32,7 @@ const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
                 {/* Anello sfumato coral→pesca */}
                 <span className="rounded-full p-[3px] bg-gradient-to-br from-primary/70 via-secondary to-primary/30 shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
                   <span className="block rounded-full bg-body p-1">
-                    <span className="block relative aspect-square w-[88px] sm:w-24 md:w-28 overflow-hidden rounded-full">
+                    <span className="block relative aspect-square w-24 sm:w-28 md:w-32 overflow-hidden rounded-full">
                       <ImageFallback
                         src={image?.url || "/images/image-placeholder.png"}
                         fallback="/images/image-placeholder.png"
