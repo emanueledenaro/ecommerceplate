@@ -2,22 +2,15 @@
 
 import ImageFallback from "@/layouts/helpers/ImageFallback";
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
 import type { Collection } from "@/lib/shopify/types";
 
 const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
-  const t = useTranslations("products");
-
   return (
     <div className="relative">
       {/* Mobile: griglia 3x2 tutta visibile | Desktop: riga unica centrata */}
-      <ul
-        className="grid grid-cols-3 gap-x-2 gap-y-6 justify-items-center md:flex md:justify-center md:gap-6 select-none"
-        aria-label={t("productCount", { count: collections.length })}
-      >
+      <ul className="grid grid-cols-3 gap-x-2 gap-y-6 justify-items-center md:flex md:justify-center md:gap-6 select-none">
         {collections.map((item, index) => {
-          const { title, handle, image, products } = item;
-          const productCount = products?.edges?.length || 0;
+          const { title, handle, image } = item;
 
           return (
             <li
@@ -48,9 +41,6 @@ const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
 
                 <span className="mt-3 block font-semibold text-sm md:text-base text-text-dark transition-colors duration-200 group-hover:text-primary">
                   {title}
-                </span>
-                <span className="mt-0.5 block text-[11px] md:text-xs uppercase tracking-wider text-text-light">
-                  {t("productCount", { count: productCount })}
                 </span>
               </Link>
             </li>

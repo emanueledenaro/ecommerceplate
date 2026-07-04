@@ -15,6 +15,14 @@ interface Review {
   date: string;
 }
 
+// Palette morbida per gli avatar con iniziali
+const AVATAR_STYLES = [
+  "from-primary/80 to-primary/50",
+  "from-secondary to-primary/40",
+  "from-primary/60 to-secondary",
+  "from-secondary/80 to-primary/60",
+];
+
 const ReviewsSection = () => {
   const t = useTranslations("reviews");
   const reviews: Review[] = [
@@ -48,31 +56,25 @@ const ReviewsSection = () => {
     },
   ];
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-0.5">
-        {[...Array(5)].map((_, index) => (
-          <span
-            key={index}
-            className={`text-lg ${
-              index < rating ? "text-rating-gold" : "text-border "
-            }`}
-          >
-            ★
-          </span>
-        ))}
-      </div>
-    );
-  };
+  const renderStars = (rating: number) => (
+    <div className="flex gap-0.5 text-sm" aria-label={`${rating}/5`} role="img">
+      {[...Array(5)].map((_, index) => (
+        <span
+          key={index}
+          className={index < rating ? "text-rating-gold" : "text-border"}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
 
   return (
-    <section className="py-16 md:py-20 bg-gradient-to-b from-white to-light/30  ">
+    <section className="py-16 md:py-20 bg-gradient-to-b from-white to-light/30">
       <div className="container">
         <div className="text-center mb-10 md:mb-14">
           <h2 className="mb-3">{t("title")}</h2>
-          <p className="text-lg text-text  max-w-2xl mx-auto">
-            {t("subtitle")}
-          </p>
+          <p className="text-lg text-text max-w-2xl mx-auto">{t("subtitle")}</p>
         </div>
 
         <Swiper
@@ -89,38 +91,72 @@ const ReviewsSection = () => {
             disableOnInteraction: false,
           }}
           breakpoints={{
-            640: {
-              slidesPerView: 2,
-            },
-            1024: {
-              slidesPerView: 3,
-            },
+            640: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
           }}
-          className="pb-12 [&_.swiper-slide]:h-auto"
+          className="pb-12 [&_.swiper-wrapper]:items-stretch [&_.swiper-slide]:h-auto [&_.swiper-slide]:self-stretch"
         >
           {reviews.map((review, index) => (
-            <SwiperSlide key={index} className="flex">
-              <div className="flex h-full w-full flex-col bg-white  p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all border border-border/20 ">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h4 className="font-bold text-text-dark  mb-1">
+            <SwiperSlide
+              key={review.name}
+              style={{ height: "auto", display: "flex" }}
+            >
+              <article className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-border/30 bg-white p-6 md:p-7 shadow-lg/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                {/* Quote decorativa */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -top-3 right-4 font-primary text-[7rem] leading-none text-primary/10 select-none"
+                >
+                  &rdquo;
+                </span>
+
+                {/* Intestazione: avatar + nome + data */}
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${AVATAR_STYLES[index % AVATAR_STYLES.length]} font-bold text-white shadow-sm`}
+                  >
+                    {review.name.charAt(0)}
+                  </span>
+                  <div className="min-w-0">
+                    <h4 className="truncate text-base font-bold text-text-dark">
                       {review.name}
                     </h4>
-                    <p className="text-sm text-text ">{review.date}</p>
+                    <p className="text-xs text-text-light">{review.date}</p>
                   </div>
-                  {renderStars(review.rating)}
                 </div>
 
-                <p className="text-text  mb-4 leading-relaxed">
+                {/* Stelle */}
+                <div className="mt-4">{renderStars(review.rating)}</div>
+
+                {/* Commento */}
+                <p className="mt-3 leading-relaxed text-text">
                   &ldquo;{review.comment}&rdquo;
                 </p>
 
-                <div className="mt-auto pt-4 border-t border-border/30 ">
-                  <p className="text-sm font-medium text-primary ">
-                    📦 {review.product}
-                  </p>
+                {/* Footer ancorato: prodotto + verificata */}
+                <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border/30 pt-4">
+                  <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-light px-3 py-1 text-xs font-medium text-text-dark">
+                    <span aria-hidden="true">🐾</span>
+                    <span className="truncate">{review.product}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                    <svg
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    {t("verifiedPurchase")}
+                  </span>
                 </div>
-              </div>
+              </article>
             </SwiperSlide>
           ))}
         </Swiper>
@@ -128,22 +164,22 @@ const ReviewsSection = () => {
         {/* Trust indicators */}
         <div className="mt-12 flex flex-wrap items-center justify-center gap-8 md:gap-12">
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-primary  mb-1">
+            <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
               10.000+
             </div>
-            <p className="text-sm text-text ">{t("productsSold")}</p>
+            <p className="text-sm text-text">{t("productsSold")}</p>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-primary  mb-1">
+            <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
               4.9/5
             </div>
-            <p className="text-sm text-text ">{t("averageRating")}</p>
+            <p className="text-sm text-text">{t("averageRating")}</p>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold text-primary  mb-1">
+            <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
               98%
             </div>
-            <p className="text-sm text-text ">{t("satisfiedCustomers")}</p>
+            <p className="text-sm text-text">{t("satisfiedCustomers")}</p>
           </div>
         </div>
       </div>
