@@ -2,135 +2,74 @@
 
 import ImageFallback from "@/layouts/helpers/ImageFallback";
 import { Link } from "@/i18n/navigation";
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import "swiper/css";
-import "swiper/css/pagination";
-import { Autoplay, Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
-import LoadingCategory from "./loadings/skeleton/SkeletonCategory";
+import type { Collection } from "@/lib/shopify/types";
 
-const CollectionsSlider = ({ collections }: { collections: any }) => {
-  const [collectionsData, setCollectionsData] = useState([]);
-  const [loadingCollectionsData, setLoadingCollectionsData] = useState(true);
+const CollectionsSlider = ({ collections }: { collections: Collection[] }) => {
   const t = useTranslations("products");
-
-  useEffect(() => {
-    setCollectionsData(collections);
-    setLoadingCollectionsData(false);
-  }, [collections]);
-
-  if (loadingCollectionsData) {
-    return <LoadingCategory />;
-  }
 
   return (
     <div className="relative">
-      {/* Mobile: Swiper centrato con autoplay come recensioni | Desktop: grid statico */}
-      <div className="md:hidden -mx-4 px-4">
-        <Swiper
-          modules={[Autoplay, Pagination]}
-          slidesPerView={1}
-          spaceBetween={20}
-          centeredSlides={false}
-          loop={true}
-          autoplay={{
-            delay: 4000,
-            disableOnInteraction: false,
-          }}
-          pagination={{
-            clickable: true,
-            bulletClass:
-              "swiper-pagination-bullet !bg-primary/30 !w-2 !h-2 !mx-1",
-            bulletActiveClass: "!bg-primary !w-6 !rounded-full",
-          }}
-          breakpoints={{
-            640: {
-              slidesPerView: 2,
-              spaceBetween: 20,
-            },
-          }}
-          className="!pb-10"
-        >
-          {collectionsData?.map((item: any) => {
-            const { title, handle, image, path, products } = item;
-            return (
-              <SwiperSlide key={handle}>
-                <div className="text-center relative group">
-                  <div className="relative mx-auto aspect-square w-full max-w-[280px] overflow-hidden rounded-full border-4 border-white/70 bg-white/60 p-2 shadow-lg  ">
-                    <ImageFallback
-                      src={image?.url || "/images/image-placeholder.png"}
-                      fallback="/images/image-placeholder.png"
-                      width={424}
-                      height={306}
-                      alt={image?.altText || `${title} collection`}
-                      className="h-full w-full rounded-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    {/* Overlay scuro su hover */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  </div>
-                  <div className="py-4 md:py-6">
-                    <h3 className="mb-1 md:mb-2 font-bold text-lg md:text-xl text-text-dark ">
-                      <Link
-                        className="after:absolute after:inset-0 hover:text-primary  transition-colors"
-                        href={`/products?c=${handle}`}
-                      >
-                        {title}
-                      </Link>
-                    </h3>
-                    <p className="text-text  text-sm md:text-base">
-                      {t("productCount", {
-                        count: item.products?.edges.length || 0,
-                      })}
-                    </p>
-                  </div>
-                </div>
-              </SwiperSlide>
-            );
-          })}
-        </Swiper>
-      </div>
+      {/* Riga unica: scroll orizzontale con snap su mobile, distribuita su desktop */}
+      <ul
+        className="flex gap-4 md:gap-6 overflow-x-auto md:overflow-visible md:justify-center snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 pb-4 md:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label={t("productCount", { count: collections.length })}
+      >
+        {collections.map((item, index) => {
+          const { title, handle, image, products } = item;
+          const productCount = products?.edges?.length || 0;
 
-      {/* Desktop: grid statico 3 colonne */}
-      <div className="hidden md:grid md:grid-cols-3 md:gap-6 md:justify-items-center">
-        {collectionsData?.map((item: any) => {
-          const { title, handle, image, path, products } = item;
           return (
-            <div
+            <li
               key={handle}
-              className="text-center relative group w-full max-w-[320px]"
+              className="snap-start shrink-0 w-28 sm:w-32 md:w-36 opacity-0 animate-[fadeUp_.5s_ease-out_forwards]"
+              style={{ animationDelay: `${index * 70}ms` }}
             >
-              <div className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-full border-4 border-white/70 bg-white/60 p-2 shadow-lg  ">
-                <ImageFallback
-                  src={image?.url || "/images/image-placeholder.png"}
-                  fallback="/images/image-placeholder.png"
-                  width={424}
-                  height={306}
-                  alt={image?.altText || `${title} collection`}
-                  className="h-full w-full rounded-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                {/* Overlay scuro su hover */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              </div>
-              <div className="py-4 md:py-6">
-                <h3 className="mb-1 md:mb-2 font-bold text-lg md:text-xl text-text-dark ">
-                  <Link
-                    className="after:absolute after:inset-0 hover:text-primary  transition-colors"
-                    href={`/products?c=${handle}`}
-                  >
-                    {title}
-                  </Link>
-                </h3>
-                <p className="text-text  text-sm md:text-base">
-                  {t("productCount", {
-                    count: item.products?.edges.length || 0,
-                  })}
-                </p>
-              </div>
-            </div>
+              <Link
+                href={`/products?c=${handle}`}
+                className="group flex flex-col items-center text-center"
+              >
+                {/* Anello sfumato coral→pesca */}
+                <span className="rounded-full p-[3px] bg-gradient-to-br from-primary/70 via-secondary to-primary/30 shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
+                  <span className="block rounded-full bg-body p-1">
+                    <span className="block relative aspect-square w-[88px] sm:w-24 md:w-28 overflow-hidden rounded-full">
+                      <ImageFallback
+                        src={image?.url || "/images/image-placeholder.png"}
+                        fallback="/images/image-placeholder.png"
+                        width={224}
+                        height={224}
+                        alt={image?.altText || title}
+                        className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                      />
+                      <span className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    </span>
+                  </span>
+                </span>
+
+                <span className="mt-3 block font-semibold text-sm md:text-base text-text-dark transition-colors duration-200 group-hover:text-primary">
+                  {title}
+                </span>
+                <span className="mt-0.5 block text-[11px] md:text-xs uppercase tracking-wider text-text-light">
+                  {t("productCount", { count: productCount })}
+                </span>
+              </Link>
+            </li>
           );
         })}
-      </div>
+      </ul>
+
+      <style jsx global>{`
+        @keyframes fadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

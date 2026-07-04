@@ -96,11 +96,11 @@ const ReviewsSection = () => {
               slidesPerView: 3,
             },
           }}
-          className="pb-12"
+          className="pb-12 [&_.swiper-slide]:h-auto"
         >
           {reviews.map((review, index) => (
-            <SwiperSlide key={index}>
-              <div className="bg-white  p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all h-full border border-border/20 ">
+            <SwiperSlide key={index} className="flex">
+              <div className="flex h-full w-full flex-col bg-white  p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all border border-border/20 ">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h4 className="font-bold text-text-dark  mb-1">
@@ -115,7 +115,7 @@ const ReviewsSection = () => {
                   &ldquo;{review.comment}&rdquo;
                 </p>
 
-                <div className="pt-4 border-t border-border/30 ">
+                <div className="mt-auto pt-4 border-t border-border/30 ">
                   <p className="text-sm font-medium text-primary ">
                     📦 {review.product}
                   </p>
