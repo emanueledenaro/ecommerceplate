@@ -3,6 +3,7 @@
 import { ProductOption, ProductVariant } from "@/lib/shopify/types";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { createUrl } from "@/lib/utils";
+import { colorNameToHex } from "@/lib/colors";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -180,27 +181,47 @@ export function VariantSelector({
                         : ""
                     }`}
                   >
-                    {/* Render the color image for the current value */}
+                    {/* Swatch colore: immagine dedicata se esiste, altrimenti
+                        pastiglia col colore corrispondente al nome */}
                     {option.name === "Color" ? (
-                      <div
-                        key={value}
-                        className={`relative rounded-2xl overflow-hidden ${
-                          isActive && "outline-1 outline-dark "
-                        }`}
-                      >
-                        <Image
-                          src={imageMap[value]}
-                          alt={value}
-                          width={50}
-                          height={50}
-                          className={`${isActive && "opacity-80"}`}
-                        />
-                        {isActive && (
-                          <span className="text-inherit h-full opacity-100 absolute top-2 right-2">
-                            <BsCheckLg size={35} />
-                          </span>
-                        )}
-                      </div>
+                      imageMap[value] ? (
+                        <div
+                          key={value}
+                          className={`relative overflow-hidden rounded-2xl ${
+                            isActive ? "outline-1 outline-dark" : ""
+                          }`}
+                        >
+                          <Image
+                            src={imageMap[value]}
+                            alt={value}
+                            width={50}
+                            height={50}
+                            className={isActive ? "opacity-80" : ""}
+                          />
+                          {isActive && (
+                            <span className="absolute right-2 top-2 h-full text-inherit opacity-100">
+                              <BsCheckLg size={35} />
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span
+                          className={`flex h-[46px] w-[46px] items-center justify-center rounded-2xl ${
+                            isActive
+                              ? "outline-2 outline-dark"
+                              : "border border-border"
+                          }`}
+                          style={{ backgroundColor: colorNameToHex(value) }}
+                          title={value}
+                        >
+                          {isActive && (
+                            <BsCheckLg
+                              size={22}
+                              className="text-white drop-shadow"
+                            />
+                          )}
+                        </span>
+                      )
                     ) : (
                       value
                     )}
