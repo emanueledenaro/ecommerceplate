@@ -1,4 +1,6 @@
-export const dynamic = "force-dynamic";
+// Home statica con ISR: le categorie sono pre-renderizzate (caricamento
+// istantaneo) e riconvalidate ogni ora o dal webhook Shopify.
+export const revalidate = 3600;
 
 import type { Metadata } from "next";
 import CollectionsSlider from "@/components/CollectionsSlider";
@@ -15,8 +17,8 @@ import CallToAction from "@/partials/CallToAction";
 import { getMetadataAlternates } from "@/lib/i18n/metadata";
 import SeoMeta from "@/partials/SeoMeta";
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
-import { shopifyContext } from "@/lib/i18n/config";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { shopifyContext, defaultLocale } from "@/lib/i18n/config";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const t = await getTranslations("common");
@@ -38,6 +40,8 @@ const ShowCollections = async ({
 };
 
 const Home = async () => {
+  // Abilita lo static rendering di next-intl (niente lettura headers a runtime).
+  setRequestLocale(defaultLocale);
   const t = await getTranslations("common");
   const context = shopifyContext;
 

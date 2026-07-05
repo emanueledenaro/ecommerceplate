@@ -1,17 +1,24 @@
+// Rispecchia CollectionsSlider: griglia 3x2 su mobile, riga su desktop,
+// cerchi con anello + etichetta sotto.
 const SkeletonCategory = () => {
   return (
-    <div className="grid grid-cols-2 gap-x-6 md:grid-cols-3 md:justify-items-center">
-      {Array(3)
+    <ul className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-6 md:flex md:justify-center md:gap-6">
+      {Array(6)
         .fill(0)
-        .map((_, index) => {
-          return (
-            <div
-              key={index}
-              className="aspect-square w-full max-w-[320px] rounded-full animate-pulse bg-neutral-200 shadow-lg "
-            />
-          );
-        })}
-    </div>
+        .map((_, index) => (
+          <li
+            key={index}
+            className="flex w-full max-w-32 flex-col items-center sm:max-w-36 md:w-40 md:max-w-none"
+          >
+            <div className="rounded-full bg-neutral-100 p-[3px] shadow-md">
+              <div className="rounded-full bg-body p-1">
+                <div className="aspect-square w-24 animate-pulse rounded-full bg-neutral-200 sm:w-28 md:w-32" />
+              </div>
+            </div>
+            <div className="mt-3 h-4 w-16 animate-pulse rounded bg-neutral-200" />
+          </li>
+        ))}
+    </ul>
   );
 };
 

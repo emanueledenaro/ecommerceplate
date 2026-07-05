@@ -530,6 +530,9 @@ export async function getCollections(
   return withShopifyFallback<Collection[]>("getCollections", [], async () => {
     const res = await shopifyFetch<ShopifyCollectionsOperation>({
       query: getCollectionsQuery,
+      // Le collezioni cambiano di rado: cache persistente invalidata dal
+      // webhook (revalidateTag(TAGS.collections)) invece di rifetch a ogni load.
+      cache: "force-cache",
       tags: [TAGS.collections],
       variables: {
         ...(context && {

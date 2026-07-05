@@ -1,7 +1,9 @@
 "use client";
 
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { CATEGORY_COVERS } from "@/lib/categoryCovers";
 import { Collection } from "@/lib/shopify/types";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 interface CategoryHeaderProps {
@@ -22,24 +24,41 @@ export default function CategoryHeader({
     : category?.title || t("allProducts");
 
   const description = !searchValue && category?.description;
+  const coverImage = category?.handle
+    ? CATEGORY_COVERS[category.handle] || category.image?.url
+    : undefined;
 
   return (
     <section>
       <div className="text-center">
-        <div className="bg-gradient-to-b from-body to-light px-8 py-14 md:py-20  ">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+        <div className="relative overflow-hidden bg-gradient-to-b from-body to-light px-8 py-14 md:py-20">
+          {coverImage && (
+            <>
+              <Image
+                src={coverImage}
+                alt={category?.image?.altText || title}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-white/72" />
+            </>
+          )}
+
+          <h1 className="relative mb-4 text-3xl font-bold md:text-4xl lg:text-5xl">
             {title}
           </h1>
 
           {description && (
-            <p className="text-base md:text-lg text-text  max-w-2xl mx-auto mb-6 leading-relaxed">
+            <p className="relative mx-auto mb-6 max-w-2xl text-base leading-relaxed text-text md:text-lg">
               {description}
             </p>
           )}
 
-          <p className="text-sm md:text-base text-text  mb-6">
+          <p className="relative mb-6 text-sm text-text md:text-base">
             {productCount === 0 ? (
-              <span className="text-error  font-medium">
+              <span className="font-medium text-error">
                 {t("noProductsFound")}
               </span>
             ) : (
@@ -50,7 +69,7 @@ export default function CategoryHeader({
             )}
           </p>
 
-          <Breadcrumbs className="mt-6" />
+          <Breadcrumbs className="relative mt-6" />
         </div>
       </div>
     </section>
